@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cut Coal Technology - 3D Longwall Floor Model.CSharp", "Cut Coal Technology - 3D Longwall Floor Model.CSharp.csproj", "{29504A9C-BDB1-D77E-DED1-E58BAE7E2AFA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{29504A9C-BDB1-D77E-DED1-E58BAE7E2AFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29504A9C-BDB1-D77E-DED1-E58BAE7E2AFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29504A9C-BDB1-D77E-DED1-E58BAE7E2AFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29504A9C-BDB1-D77E-DED1-E58BAE7E2AFA}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
