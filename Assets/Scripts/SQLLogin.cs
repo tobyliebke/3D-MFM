@@ -1,12 +1,14 @@
-﻿using UnityEngine;
+﻿﻿using UnityEngine;
 using System.Collections;
 using System.Data;
+using System.Data.OleDb;
 //using System.Data.SqlClient;
-using System.Data.Odbc;
+//using System.Data.Odbc;
 //using Mono.Data.Sqlite;
 //using Mono.Data;
 
-public class SQLLogin : MonoBehaviour {
+public class SQLLogin : MonoBehaviour
+{
 
     public Terrain TerrainMain;
     string server = "localhost";
@@ -14,19 +16,26 @@ public class SQLLogin : MonoBehaviour {
     string connStatus = "";
 
     // Use this for initialization
-    void ChangeTerrain() {
+    void ChangeTerrain()
+    {
 
         //Mono.Data.Sqlite.SqliteConnection conn = new Mono.Data.Sqlite.SqliteConnection();
         bool connection;
+        //CODE FOR Odbc 
+        //System.Data.Odbc.OdbcConnection conn = new System.Data.Odbc.OdbcConnection();
 
-        System.Data.Odbc.OdbcConnection conn = new System.Data.Odbc.OdbcConnection();
 
-        //string server = "localhost";
-        //string database = "Longwall";
 
-        string connectionString = "Driver={SQL Server};Server=" + server + ";Database=" + database + ";Uid=longwall_ro;Pwd=longwall_ro;";
+        //CODE FOR Odbc
+        //string connectionString = "Driver={SQL Server};Server=" + server + ";Database=" + database + ";Uid=longwall_ro;Pwd=longwall_ro;";
+        //CODE FOR SQL
+        //string connectionString = "Data Source=" + server + ";Initial Catalog=" + database + ";User id=longwall_ro;Password=longwall_ro;";
+        //SqlConnection conn = new SqlConnection(connectionString);
+        string connectionString = "Provider=sqloledb;Data Source=(local);Initial Catalog=Longwall;User Id=longwall_ro;Password=longwall_ro;";
+        OleDbConnection conn = new OleDbConnection(connectionString);
 
-        conn.ConnectionString = connectionString;
+        //CODE FOR Odbc
+        //conn.ConnectionString = connectionString;
         conn.Open();
 
         //IDbConnection conn = new SqlConnection();
@@ -41,12 +50,19 @@ public class SQLLogin : MonoBehaviour {
             connStatus = "Connected";
         else
             connStatus = "Failed to connect";
-
-        OdbcCommand comm2;
+        //CODE FOR Odbc
+        //OdbcCommand comm2;
+        //CODE FOR SQL
+        //SqlCommand comm2;
+        OleDbCommand comm2;
         comm2 = conn.CreateCommand();
 
         comm2.CommandText = "SELECT MAX(XAxis) - MIN(XAxis) AS TotalXWidth, MAX(YAxis) - MIN(YAxis) AS TotalYWidth, MIN(XAxis) AS XAxisOffset, MIN(YAxis) AS YAxisOffset FROM vwLongWall";
-        OdbcDataReader sql_dr2;
+        //CODE FOR Odbc
+        //OdbcDataReader sql_dr2;
+        //CODE FOR SQL 
+        //SqlDataReader sql_dr2;
+        OleDbDataReader sql_dr2;
         sql_dr2 = comm2.ExecuteReader();
 
 
@@ -55,20 +71,23 @@ public class SQLLogin : MonoBehaviour {
 
         //if (sql_dr2.HasRows)
         //{
-            while (sql_dr2.Read())
-            {
-                totalXWidth = int.Parse(sql_dr2["TotalXWidth"].ToString());
-                totalYWidth = int.Parse(sql_dr2["TotalYWidth"].ToString());
-            }
+        while (sql_dr2.Read())
+        {
+            totalXWidth = int.Parse(sql_dr2["TotalXWidth"].ToString());
+            totalYWidth = int.Parse(sql_dr2["TotalYWidth"].ToString());
+        }
         //}
 
         Vector3 worldSize = new Vector3(totalYWidth, 10000, totalXWidth);
 
         sql_dr2.Close();
 
-
-        OdbcCommand comm;
-        comm = conn.CreateCommand();
+        //CODE FOR Odbc
+        //OdbcCommand comm;
+        //CODE FOR SQL
+        // SqlCommand comm;
+        OleDbCommand comm;
+         comm = conn.CreateCommand();
 
         int xRes = TerrainMain.terrainData.heightmapWidth;
         int yRes = TerrainMain.terrainData.heightmapHeight;
@@ -78,15 +97,18 @@ public class SQLLogin : MonoBehaviour {
 
         comm.CommandText = "SELECT  RowLabel, [XAxis], [YAxis], FloorHeight, RowColor FROM vwLongwall ORDER BY XAxis, YAxis";
 
-
-        OdbcDataReader sql_dr;
+        //CODE FOR Odbc
+        //OdbcDataReader sql_dr;
+        //CODE FOR SQL
+        //SqlDataReader sql_dr;
+        OleDbDataReader sql_dr;
 
         sql_dr = comm.ExecuteReader();
 
         string RowColor;
 
         float[,] heights = TerrainMain.terrainData.GetHeights(0, 0, xRes, yRes);
-        float[,,] alphas = TerrainMain.terrainData.GetAlphamaps(0, 0, TerrainMain.terrainData.alphamapWidth, TerrainMain.terrainData.alphamapHeight);
+        float[, ,] alphas = TerrainMain.terrainData.GetAlphamaps(0, 0, TerrainMain.terrainData.alphamapWidth, TerrainMain.terrainData.alphamapHeight);
 
         for (int x = 0; x < TerrainMain.terrainData.alphamapWidth; x++)
         {
@@ -107,47 +129,47 @@ public class SQLLogin : MonoBehaviour {
         //if (sql_dr.HasRows)
         //{
 
-            while (sql_dr.Read())
+        while (sql_dr.Read())
+        {
+            xAxis = int.Parse(sql_dr["XAxis"].ToString());
+            yAxis = int.Parse(sql_dr["YAxis"].ToString());
+
+            floorHeight = float.Parse(sql_dr["FloorHeight"].ToString());
+
+
+            heights[xAxis, yAxis] = floorHeight; //0 - 1. 1 being the maximum possible height
+
+            RowColor = sql_dr["RowColor"].ToString().Trim();
+
+
+            switch (RowColor)
             {
-                xAxis = int.Parse(sql_dr["XAxis"].ToString());
-                yAxis = int.Parse(sql_dr["YAxis"].ToString());
+                case "Red":
+                    alphas[xAxis, yAxis, 0] = 0;
+                    alphas[xAxis, yAxis, 1] = 0;
+                    alphas[xAxis, yAxis, 2] = 1;
+                    alphas[xAxis, yAxis, 3] = 0;
+                    break;
+                case "Yellow":
+                    alphas[xAxis, yAxis, 0] = 0;
+                    alphas[xAxis, yAxis, 1] = 1;
+                    alphas[xAxis, yAxis, 2] = 0;
+                    alphas[xAxis, yAxis, 3] = 0;
+                    break;
+                case "Green":
+                    alphas[xAxis, yAxis, 0] = 1;
+                    alphas[xAxis, yAxis, 1] = 0;
+                    alphas[xAxis, yAxis, 2] = 0;
+                    alphas[xAxis, yAxis, 3] = 0;
+                    break;
+                case "Grey":
+                    alphas[xAxis, yAxis, 0] = 0;
+                    alphas[xAxis, yAxis, 1] = 0;
+                    alphas[xAxis, yAxis, 2] = 0;
+                    alphas[xAxis, yAxis, 3] = 1;
+                    break;
 
-                floorHeight = float.Parse(sql_dr["FloorHeight"].ToString());
-
-
-                heights[xAxis, yAxis] = floorHeight; //0 - 1. 1 being the maximum possible height
-
-                RowColor = sql_dr["RowColor"].ToString().Trim();
-
-
-                switch (RowColor)
-                {
-                    case "Red":
-                        alphas[xAxis, yAxis, 0] = 0;
-                        alphas[xAxis, yAxis, 1] = 0;
-                        alphas[xAxis, yAxis, 2] = 1;
-                        alphas[xAxis, yAxis, 3] = 0;
-                        break;
-                    case "Yellow":
-                        alphas[xAxis, yAxis, 0] = 0;
-                        alphas[xAxis, yAxis, 1] = 1;
-                        alphas[xAxis, yAxis, 2] = 0;
-                        alphas[xAxis, yAxis, 3] = 0;
-                        break;
-                    case "Green":
-                        alphas[xAxis, yAxis, 0] = 1;
-                        alphas[xAxis, yAxis, 1] = 0;
-                        alphas[xAxis, yAxis, 2] = 0;
-                        alphas[xAxis, yAxis, 3] = 0;
-                        break;
-                    case "Grey":
-                        alphas[xAxis, yAxis, 0] = 0;
-                        alphas[xAxis, yAxis, 1] = 0;
-                        alphas[xAxis, yAxis, 2] = 0;
-                        alphas[xAxis, yAxis, 3] = 1;
-                        break;
-
-                }
+            }
 
         }
 
@@ -185,6 +207,7 @@ public class SQLLogin : MonoBehaviour {
         if (GUI.Button(new Rect((Screen.width) / 10000 + 105, (Screen.height) / 1000 + 20, 65, 20), "Refresh", ButtonTexture))
         {
             ChangeTerrain();
+            Debug.Log("Refreshed");
         }
         if (!optionsMenu)
         {
@@ -225,12 +248,12 @@ public class SQLLogin : MonoBehaviour {
 
                 if (GUI.Button(new Rect((Screen.width) / 10000 + 42, (Screen.height) / 1000 + 108, 226, 22), "EDIT", DropbuttonTexture))
                     showForm = false;
-                    optionsSize = 100;
+                optionsSize = 100;
 
 
             }
 
         }
     }
-    }
+}
 
